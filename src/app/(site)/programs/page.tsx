@@ -15,9 +15,7 @@ export default function ProgramsPage() {
           <h1 className="mt-4 text-4xl font-bold leading-tight text-stone-950 md:text-5xl">
             구은혜아동발달센터 치료 프로그램
           </h1>
-          <p className="mt-5 text-lg leading-8 text-stone-600">
-            전달받은 실제 프로그램 설명을 바탕으로 각 치료를 자세히 안내합니다.
-          </p>
+          <p className="mt-5 text-lg leading-8 text-stone-600"></p>
         </div>
         <ProgramDetail />
       </div>

@@ -35,9 +35,7 @@ export default function TeachersPage() {
           <h1 className="mt-4 text-4xl font-bold leading-tight text-stone-950 md:text-5xl">
             센터 선생님
           </h1>
-          <p className="mt-5 text-lg leading-8 text-stone-600">
-            현재 전달받은 이름과 직책을 직군별로 정리했습니다.
-          </p>
+          <p className="mt-5 text-lg leading-8 text-stone-600"></p>
         </div>
 
         <div className="mt-10 grid gap-5">

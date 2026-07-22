@@ -15,9 +15,7 @@ export default function NoticesPage() {
           <h1 className="mt-4 text-4xl font-bold leading-tight text-stone-950 md:text-5xl">
             공지사항
           </h1>
-          <p className="mt-5 text-lg leading-8 text-stone-600">
-            센터 운영 안내와 주요 공지를 확인하는 게시판입니다.
-          </p>
+          <p className="mt-5 text-lg leading-8 text-stone-600"></p>
         </div>
 
         <Suspense
