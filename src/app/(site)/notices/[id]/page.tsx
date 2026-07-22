@@ -40,7 +40,7 @@ export default async function NoticeDetailPage({ params }: NoticeDetailPageProps
 
   return (
     <section>
-      <div className="mx-auto max-w-4xl px-5 py-14 md:py-20">
+      <div className="mx-auto max-w-7xl px-5 py-14 md:py-20">
         <Link href="/notices" className="text-sm font-bold text-teal-800 hover:text-teal-950">
           목록으로 돌아가기
         </Link>
