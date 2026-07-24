@@ -13,7 +13,7 @@ export function MoreLink({ href, children, className = "" }: MoreLinkProps) {
   return (
     <Link
       href={href}
-      className={`group inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold text-teal-800 transition hover:text-teal-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 active:bg-teal-100 ${className}`}>
+      className={`group inline-flex h-9 items-center justify-center gap-2 self-start rounded-md px-2 text-sm font-bold text-teal-800 transition hover:bg-teal-50 hover:text-teal-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 active:bg-teal-100 md:h-10 md:px-3 ${className}`}>
       {children}
       <ArrowRight
         aria-hidden="true"

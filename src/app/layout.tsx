@@ -21,13 +21,12 @@ export const metadata: Metadata = {
     icon: "/images/logo.png",
   },
   title: {
-    default: "구은혜아동발달센터",
-    template: "%s | 구은혜아동발달센터",
+    default: "아동발달센터",
+    template: "%s | 아동발달센터",
   },
   description:
-    "천안 서북구 충무로에 위치한 구은혜아동발달센터입니다. 언어치료, 무발화 핸들링 언어치료, 구강운동치료, 작업인지 및 시지각, 연하재활치료, 사회성 그룹, 플로어타임, 학교대비반을 안내합니다.",
+    "언어치료, 무발화 핸들링 언어치료, 구강운동치료, 작업인지 및 시지각, 연하재활치료, 사회성 그룹, 플로어타임, 학교대비반을 안내합니다.",
   keywords: [
-    "구은혜아동발달센터",
     "천안 아동발달센터",
     "언어치료",
     "구강운동치료",
@@ -35,7 +34,7 @@ export const metadata: Metadata = {
     "플로어타임",
   ],
   openGraph: {
-    title: "구은혜아동발달센터",
+    title: "아동발달센터",
     description: "치료 프로그램 및 문의 안내",
     locale: "ko_KR",
     type: "website",

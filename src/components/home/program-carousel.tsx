@@ -31,7 +31,7 @@ export function ProgramCarousel() {
 
   return (
     <div
-      className="relative mt-10"
+      className="relative mt-8"
       data-aos="fade-up"
       data-aos-delay="90"
       onMouseEnter={pauseAutoplay}
@@ -43,14 +43,14 @@ export function ProgramCarousel() {
           type="button"
           aria-label="이전 프로그램 보기"
           onClick={() => swiper?.slidePrev()}
-          className="inline-flex size-9 items-center justify-center rounded-md border border-stone-300 bg-white text-teal-800 shadow-sm transition hover:border-teal-400 hover:bg-teal-50 md:size-10">
+          className="inline-flex size-10 items-center justify-center rounded-md border border-stone-200 bg-white text-teal-800 shadow-sm transition hover:border-teal-400 hover:bg-teal-50">
           <ChevronLeft aria-hidden="true" size={18} strokeWidth={ICON_STROKE} />
         </button>
         <button
           type="button"
           aria-label="다음 프로그램 보기"
           onClick={() => swiper?.slideNext()}
-          className="inline-flex size-9 items-center justify-center rounded-md border border-stone-300 bg-white text-teal-800 shadow-sm transition hover:border-teal-400 hover:bg-teal-50 md:size-10">
+          className="inline-flex size-10 items-center justify-center rounded-md border border-stone-200 bg-white text-teal-800 shadow-sm transition hover:border-teal-400 hover:bg-teal-50">
           <ChevronRight aria-hidden="true" size={18} strokeWidth={ICON_STROKE} />
         </button>
       </div>
@@ -78,22 +78,22 @@ export function ProgramCarousel() {
           <SwiperSlide key={program.renderId} className="!h-auto">
             <Link
               href={`/programs#${program.originalId}`}
-              className="group flex h-full flex-col overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-teal-300 hover:shadow-md">
+              className="group flex h-full flex-col overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:border-teal-300">
               <div className="relative aspect-[4/3]">
                 <Image
                   src={program.image}
-                  alt={`${program.title} 공간 이미지`}
+                  alt={program.imageAlt ?? `${program.title} 공간 이미지`}
                   fill
-                  className="object-cover"
+                  className="object-cover transition duration-500 group-hover:scale-[1.03]"
                   sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                 />
               </div>
-              <div className="flex flex-1 flex-col p-5">
-                <h3 className="text-xl font-bold text-stone-950">{program.title}</h3>
+              <div className="flex flex-1 flex-col p-4">
+                <h3 className="text-lg font-bold text-stone-950">{program.title}</h3>
                 <p className="mt-3 line-clamp-2 text-sm leading-6 text-stone-600">
                   {program.description}
                 </p>
-                <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-semibold text-teal-800 group-hover:text-teal-950">
+                <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-teal-800 group-hover:text-teal-950">
                   자세히 보기
                   <ArrowRight
                     aria-hidden="true"
