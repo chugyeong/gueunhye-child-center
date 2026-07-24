@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: NoticeDetailPageProps) {
 
   return {
     title: notice?.title ?? "공지사항",
-    description: notice?.content.slice(0, 120) ?? "구은혜아동발달센터 공지사항",
+    description: notice?.content.slice(0, 120) ?? "아동발달센터 공지사항",
   };
 }
 

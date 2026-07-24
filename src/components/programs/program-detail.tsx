@@ -104,7 +104,7 @@ export function ProgramDetail() {
                   >
                     <Image
                       src={program.image}
-                      alt={`${program.title} 관련 센터 공간`}
+                      alt={program.imageAlt ?? `${program.title} 관련 센터 공간`}
                       fill
                       className="object-cover"
                       sizes="(min-width: 1024px) 40vw, 100vw"

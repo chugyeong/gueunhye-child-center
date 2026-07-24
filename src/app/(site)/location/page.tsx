@@ -2,7 +2,7 @@ import { LocationCtaPanel } from "@/components/location/location-cta-panel";
 
 export const metadata = {
   title: "오시는 길",
-  description: "구은혜아동발달센터 위치와 연락처 안내",
+  description: "아동발달센터 위치와 연락처 안내",
 };
 
 export default function LocationPage() {

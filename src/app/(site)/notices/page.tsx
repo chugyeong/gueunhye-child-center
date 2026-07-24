@@ -3,7 +3,7 @@ import { NoticeList } from "@/components/notices/notice-list";
 
 export const metadata = {
   title: "공지사항",
-  description: "구은혜아동발달센터 공지사항 안내",
+  description: "아동발달센터 공지사항 안내",
 };
 
 export default function NoticesPage() {
