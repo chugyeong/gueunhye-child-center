@@ -1,11 +1,14 @@
 "use client";
 
-import { ChevronDown, Menu, MessageCircle, Phone, X, type LucideIcon } from "lucide-react";
+import { ChevronDown, Menu, MessageCircle, Phone, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { centerInfo } from "@/data/center";
+import { useEffect, useRef, useState, type ComponentType } from "react";
+import { InstagramIcon } from "@/components/ui/instagram-icon";
+import { centerStaticInfo } from "@/data/center";
+import { useCenterInfoStore } from "@/stores/centerInfoStore";
+import { formatPhoneNumber, toTelHref } from "@/utils/operatingHours";
 
 const ICON_STROKE = 1.8;
 
@@ -22,42 +25,24 @@ type ContactLink = {
   label: string;
   description: string;
   href: string;
-  icon: LucideIcon;
+  icon: ComponentType<{
+    size?: number;
+    strokeWidth?: number;
+    "aria-hidden"?: boolean | "true" | "false";
+  }>;
   external?: boolean;
 };
 
 const menuItems: MenuItem[] = [
-  {
-    label: "센터소개",
-    href: "/about",
-    children: [
-      { label: "센터 소개", href: "/about" },
-      { label: "선생님 소개", href: "/teachers" },
-      { label: "치료 프로그램", href: "/programs" },
-      { label: "오시는 길", href: "/location" },
-    ],
-  },
+  { label: "치료 프로그램", href: "/programs" },
+  { label: "선생님 소개", href: "/teachers" },
+  { label: "오시는 길", href: "/location" },
   { label: "공지사항", href: "/notices" },
-];
-
-const contactLinks: ContactLink[] = [
-  {
-    label: "전화 문의",
-    description: centerInfo.mobile.display,
-    href: centerInfo.mobile.href,
-    icon: Phone,
-  },
-  {
-    label: "카카오 상담",
-    description: "오픈채팅으로 문의",
-    href: centerInfo.kakaoUrl,
-    icon: MessageCircle,
-    external: true,
-  },
 ];
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const centerInfo = useCenterInfoStore((state) => state.centerInfo);
   const [isScrolled, setIsScrolled] = useState(false);
   const [openDesktopMenu, setOpenDesktopMenu] = useState<string | null>(null);
   const [isContactOpen, setIsContactOpen] = useState(false);
@@ -66,6 +51,7 @@ export function SiteHeader() {
   const contactButtonRef = useRef<HTMLButtonElement>(null);
   const firstContactItemRef = useRef<HTMLAnchorElement>(null);
   const contactPopoverRef = useRef<HTMLDivElement>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileDrawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -112,7 +98,12 @@ export function SiteHeader() {
         setIsContactOpen(false);
       }
 
-      if (isMobileOpen && mobileDrawerRef.current && !mobileDrawerRef.current.contains(target)) {
+      if (
+        isMobileOpen &&
+        mobileDrawerRef.current &&
+        !mobileDrawerRef.current.contains(target) &&
+        !mobileMenuButtonRef.current?.contains(target)
+      ) {
         setIsMobileOpen(false);
       }
     };
@@ -155,6 +146,34 @@ export function SiteHeader() {
     closeContact();
     setOpenDesktopMenu(label);
   };
+  const centerName = centerInfo?.center_name ?? "";
+  const mobileHref = toTelHref(centerInfo?.mobile_phone);
+  const contactLinks: ContactLink[] = [
+    ...(mobileHref
+      ? [
+          {
+            label: "전화 문의",
+            description: formatPhoneNumber(centerInfo?.mobile_phone),
+            href: mobileHref,
+            icon: Phone,
+          },
+        ]
+      : []),
+    {
+      label: "카카오 상담",
+      description: "오픈채팅으로 문의",
+      href: centerStaticInfo.kakaoUrl,
+      icon: MessageCircle,
+      external: true,
+    },
+    {
+      label: "인스타그램",
+      description: "센터 소식 보기",
+      href: centerStaticInfo.instagramUrl,
+      icon: InstagramIcon,
+      external: true,
+    },
+  ];
 
   const handleParentKeyDown = (event: React.KeyboardEvent<HTMLAnchorElement>, item: MenuItem) => {
     if (!item.children?.length) {
@@ -169,8 +188,10 @@ export function SiteHeader() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b bg-white/95 backdrop-blur transition-all duration-300 ${
-        isScrolled ? "border-stone-200 shadow-sm" : "border-stone-200/80 shadow-none"
+      className={`sticky top-0 z-50 border-b bg-white/90 backdrop-blur-xl transition-all duration-300 ${
+        isScrolled
+          ? "border-stone-200 shadow-[0_10px_30px_rgba(28,25,23,0.06)]"
+          : "border-stone-200/70 shadow-none"
       }`}>
       <div
         className={`mx-auto flex max-w-7xl items-center justify-between gap-6 px-5 transition-all duration-300 ${
@@ -184,23 +205,21 @@ export function SiteHeader() {
             closeMobile();
           }}
           className="inline-flex min-w-0 items-center gap-3"
-          aria-label="구은혜아동발달센터 메인으로 이동">
+          aria-label="메인으로 이동">
           <Image
-            src={centerInfo.logo}
-            alt="구은혜아동발달센터 로고"
+            src={centerStaticInfo.logo}
+            alt="센터 로고"
             width={48}
             height={48}
-            className={`shrink-0 rounded-md object-contain transition-all duration-300 ${
-              isScrolled ? "size-10" : "size-12"
-            }`}
+            className="shrink-0 rounded-md object-contain transition-all duration-300 size-12"
             priority
           />
           <span className="min-w-0">
             <span className="block truncate text-lg font-bold text-stone-950">
-              {centerInfo.name}
+              {centerName}
             </span>
             <span className="block truncate text-xs font-medium text-stone-500">
-              {centerInfo.englishName}
+              {centerStaticInfo.englishName}
             </span>
           </span>
         </Link>
@@ -289,29 +308,33 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        <div className="relative hidden lg:block">
-          <button
-            ref={contactButtonRef}
-            type="button"
-            aria-haspopup="menu"
-            aria-expanded={isContactOpen}
-            aria-controls="contact-popover"
-            onClick={toggleContact}
-            className="inline-flex h-11 items-center justify-center rounded-md bg-teal-700 px-5 text-sm font-semibold text-white transition hover:bg-teal-800">
-            문의하기
-          </button>
-          <ContactPopover
-            isOpen={isContactOpen}
-            popoverRef={contactPopoverRef}
-            firstItemRef={firstContactItemRef}
-            onClose={() => {
-              setIsContactOpen(false);
-              contactButtonRef.current?.focus();
-            }}
-          />
+        <div className="hidden items-center gap-2 lg:flex">
+          <div className="relative">
+            <button
+              ref={contactButtonRef}
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={isContactOpen}
+              aria-controls="contact-popover"
+              onClick={toggleContact}
+              className="inline-flex h-11 items-center justify-center rounded-md bg-teal-700 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 active:bg-teal-900">
+              문의하기
+            </button>
+            <ContactPopover
+              isOpen={isContactOpen}
+              contactLinks={contactLinks}
+              popoverRef={contactPopoverRef}
+              firstItemRef={firstContactItemRef}
+              onClose={() => {
+                setIsContactOpen(false);
+                contactButtonRef.current?.focus();
+              }}
+            />
+          </div>
         </div>
 
         <button
+          ref={mobileMenuButtonRef}
           type="button"
           aria-label={isMobileOpen ? "모바일 메뉴 닫기" : "모바일 메뉴 열기"}
           aria-expanded={isMobileOpen}
@@ -320,7 +343,11 @@ export function SiteHeader() {
             closeContact();
             setIsMobileOpen((current) => !current);
           }}
-          className="inline-flex size-11 items-center justify-center rounded-md border border-stone-200 text-stone-800 transition hover:border-teal-300 hover:text-teal-800 lg:hidden">
+          className={`inline-flex size-11 items-center justify-center rounded-md text-stone-800 transition hover:text-teal-800 lg:hidden ${
+            isMobileOpen
+              ? "border border-transparent hover:bg-stone-100"
+              : "border border-stone-200 hover:border-teal-300"
+          }`}>
           {isMobileOpen ? (
             <X aria-hidden="true" size={20} strokeWidth={ICON_STROKE} />
           ) : (
@@ -342,6 +369,7 @@ export function SiteHeader() {
               pathname={pathname}
               openMobileMenu={openMobileMenu}
               setOpenMobileMenu={setOpenMobileMenu}
+              contactLinks={contactLinks}
               onNavigate={closeMobile}
             />
           </div>
@@ -353,12 +381,19 @@ export function SiteHeader() {
 
 type ContactPopoverProps = {
   isOpen: boolean;
+  contactLinks: ContactLink[];
   popoverRef: React.RefObject<HTMLDivElement | null>;
   firstItemRef: React.RefObject<HTMLAnchorElement | null>;
   onClose: () => void;
 };
 
-function ContactPopover({ isOpen, popoverRef, firstItemRef, onClose }: ContactPopoverProps) {
+function ContactPopover({
+  isOpen,
+  contactLinks,
+  popoverRef,
+  firstItemRef,
+  onClose,
+}: ContactPopoverProps) {
   return (
     <div
       id="contact-popover"
@@ -372,13 +407,9 @@ function ContactPopover({ isOpen, popoverRef, firstItemRef, onClose }: ContactPo
         const Icon = item.icon;
         const commonClass =
           "flex w-full items-center gap-3 rounded-md px-3 py-3 text-left transition hover:bg-teal-50 focus:bg-teal-50";
-        const isKakao = item.label === "카카오 상담";
         const content = (
           <>
-            <span
-              className={`flex size-9 items-center justify-center rounded-md ${
-                isKakao ? "bg-[#FEE500] text-[#191919]" : "bg-teal-50 text-teal-800"
-              }`}>
+            <span className="flex size-9 items-center justify-center rounded-md bg-teal-50 text-teal-800">
               <Icon aria-hidden="true" size={18} strokeWidth={ICON_STROKE} />
             </span>
             <span>
@@ -424,10 +455,17 @@ type MobileMenuProps = {
   pathname: string;
   openMobileMenu: string | null;
   setOpenMobileMenu: (label: string | null) => void;
+  contactLinks: ContactLink[];
   onNavigate: () => void;
 };
 
-function MobileMenu({ pathname, openMobileMenu, setOpenMobileMenu, onNavigate }: MobileMenuProps) {
+function MobileMenu({
+  pathname,
+  openMobileMenu,
+  setOpenMobileMenu,
+  contactLinks,
+  onNavigate,
+}: MobileMenuProps) {
   const handleAccordionClick = (item: MenuItem) => {
     setOpenMobileMenu(openMobileMenu === item.label ? null : item.label);
   };
@@ -435,20 +473,20 @@ function MobileMenu({ pathname, openMobileMenu, setOpenMobileMenu, onNavigate }:
   return (
     <>
       <nav aria-label="모바일 주요 메뉴" className="flex-1 overflow-y-auto p-5">
-        <ul className="grid gap-2">
+        <ul className="grid gap-1.5">
           {menuItems.map((item) => {
             const hasSubmenu = Boolean(item.children?.length);
             const isOpen = openMobileMenu === item.label;
             const isActive = isMenuActive(pathname, item);
 
             return (
-              <li key={item.label} className="rounded-lg border border-stone-200">
+              <li key={item.label}>
                 {hasSubmenu ? (
                   <>
                     <button
                       type="button"
                       aria-expanded={isOpen}
-                      className={`flex w-full items-center justify-between rounded-lg px-4 py-4 text-left text-base font-bold transition ${
+                      className={`flex w-full items-center justify-between rounded-md px-3 py-3 text-left text-sm font-bold transition ${
                         isActive ? "bg-teal-50 text-teal-800" : "text-stone-900 hover:bg-stone-50"
                       }`}
                       onClick={() => handleAccordionClick(item)}>
@@ -489,7 +527,7 @@ function MobileMenu({ pathname, openMobileMenu, setOpenMobileMenu, onNavigate }:
                   <Link
                     href={item.href}
                     onClick={onNavigate}
-                    className={`block rounded-lg px-4 py-4 text-base font-bold transition ${
+                    className={`block rounded-md px-3 py-3 text-sm font-bold transition ${
                       isActive ? "bg-teal-50 text-teal-800" : "text-stone-900 hover:bg-stone-50"
                     }`}>
                     {item.label}
@@ -502,12 +540,11 @@ function MobileMenu({ pathname, openMobileMenu, setOpenMobileMenu, onNavigate }:
       </nav>
 
       <div className="border-t border-stone-200 p-5">
-        <p className="text-sm font-bold text-stone-950">문의하기</p>
-        <div className="mt-3 grid gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {contactLinks.map((item) => {
             const Icon = item.icon;
             const className =
-              "inline-flex h-12 items-center justify-center gap-2 rounded-md text-sm font-bold transition";
+              "inline-flex h-11 items-center justify-center rounded-md transition";
 
             if (item.external) {
               return (
@@ -516,10 +553,11 @@ function MobileMenu({ pathname, openMobileMenu, setOpenMobileMenu, onNavigate }:
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`${className} bg-[#FEE500] text-[#191919] hover:bg-[#f5dc00]`}
+                  aria-label={`${item.label} 새 탭에서 열기`}
+                  title={item.label}
+                  className={`${className} border border-stone-300 bg-white text-stone-800 hover:border-teal-500 hover:bg-teal-50 hover:text-teal-800`}
                   onClick={onNavigate}>
                   <Icon aria-hidden="true" size={18} strokeWidth={ICON_STROKE} />
-                  {item.label}
                 </a>
               );
             }
@@ -528,10 +566,11 @@ function MobileMenu({ pathname, openMobileMenu, setOpenMobileMenu, onNavigate }:
               <a
                 key={item.href}
                 href={item.href}
+                aria-label={item.label}
+                title={item.label}
                 className={`${className} bg-teal-700 text-white hover:bg-teal-800`}
                 onClick={onNavigate}>
                 <Icon aria-hidden="true" size={18} strokeWidth={ICON_STROKE} />
-                {item.label}
               </a>
             );
           })}
