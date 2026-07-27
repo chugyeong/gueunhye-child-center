@@ -37,12 +37,14 @@ export function getNoticeList({
   query = "",
   page = 1,
   pageSize = NOTICES_PAGE_SIZE,
+  source = notices,
 }: {
   query?: string;
   page?: number;
   pageSize?: number;
+  source?: Notice[];
 }): NoticeListResult {
-  const filtered = getSortedNotices(searchNotices(query));
+  const filtered = getSortedNotices(searchNotices(query, source));
   const totalCount = filtered.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const currentPage = clampPage(page, totalPages);
@@ -70,8 +72,8 @@ export function getAdjacentNotices(id: string) {
   };
 }
 
-export function getNoticeDisplayNumber(id: string) {
-  const regularNotices = getSortedNotices().filter((notice) => !notice.isPinned);
+export function getNoticeDisplayNumber(id: string, source: Notice[] = notices) {
+  const regularNotices = getSortedNotices(source).filter((notice) => !notice.isPinned);
   const index = regularNotices.findIndex((notice) => notice.id === id);
 
   if (index === -1) {

@@ -9,6 +9,7 @@ import {
   getNoticeList,
   NOTICES_PAGE_SIZE,
 } from "@/lib/notices";
+import { useNoticesStore } from "@/stores/noticesStore";
 
 const ICON_STROKE = 1.8;
 
@@ -16,6 +17,10 @@ export function NoticeList() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const notices = useNoticesStore((state) => state.notices);
+  const isLoading = useNoticesStore((state) => state.isLoading);
+  const error = useNoticesStore((state) => state.error);
+  const refetch = useNoticesStore((state) => state.refetch);
   const listTopRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const query = searchParams.get("q")?.trim() ?? "";
@@ -27,8 +32,9 @@ export function NoticeList() {
         query,
         page: pageParam,
         pageSize: NOTICES_PAGE_SIZE,
+        source: notices,
       }),
-    [pageParam, query],
+    [notices, pageParam, query],
   );
 
   useEffect(() => {
@@ -118,7 +124,25 @@ export function NoticeList() {
       </div>
 
       <div className="mt-4 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        {result.items.length > 0 ? (
+        {isLoading && notices.length === 0 ? (
+          <div className="px-5 py-16 text-center text-sm font-medium text-stone-600">
+            공지사항을 불러오는 중입니다.
+          </div>
+        ) : null}
+
+        {!isLoading && error ? (
+          <div className="grid gap-3 px-5 py-10 text-center">
+            <p className="text-sm font-medium text-red-700">{error}</p>
+            <button
+              type="button"
+              onClick={() => void refetch()}
+              className="mx-auto h-10 rounded-md border border-stone-300 bg-white px-4 text-sm font-bold text-stone-700 hover:border-teal-500 hover:text-teal-800">
+              다시 시도
+            </button>
+          </div>
+        ) : null}
+
+        {!isLoading && !error && result.items.length > 0 ? (
           <>
             <table className="hidden w-full border-collapse text-left md:table">
               <caption className="sr-only">공지사항 목록</caption>
@@ -151,7 +175,7 @@ export function NoticeList() {
                           <PinIconLabel />
                         </span>
                       ) : (
-                        getNoticeDisplayNumber(notice.id)
+                        getNoticeDisplayNumber(notice.id, notices)
                       )}
                     </td>
                     <td className="min-w-0 px-5 py-4">
@@ -212,7 +236,7 @@ export function NoticeList() {
               ))}
             </ul>
           </>
-        ) : (
+        ) : !isLoading && !error ? (
           <div className="px-5 py-16 text-center">
             <p className="text-base font-bold text-stone-950">
               검색 결과가 없습니다.
@@ -221,7 +245,7 @@ export function NoticeList() {
               다른 검색어를 입력하거나 검색어를 초기화해 주세요.
             </p>
           </div>
-        )}
+        ) : null}
       </div>
 
       <nav

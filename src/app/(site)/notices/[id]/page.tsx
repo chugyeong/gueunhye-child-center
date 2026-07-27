@@ -2,9 +2,11 @@ import { FileText, Pin } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { notices } from "@/data/notices";
-import { formatFileSize, getAdjacentNotices, getNoticeById } from "@/lib/notices";
+import { formatFileSize } from "@/lib/notices";
+import { getAdjacentPublicNotices, getPublicNoticeById } from "@/lib/notice-repository";
 
 const ICON_STROKE = 1.8;
+export const dynamic = "force-dynamic";
 
 type NoticeDetailPageProps = {
   params: Promise<{
@@ -20,7 +22,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: NoticeDetailPageProps) {
   const { id } = await params;
-  const notice = getNoticeById(id);
+  const notice = await getPublicNoticeById(id);
 
   return {
     title: notice?.title ?? "공지사항",
@@ -30,13 +32,13 @@ export async function generateMetadata({ params }: NoticeDetailPageProps) {
 
 export default async function NoticeDetailPage({ params }: NoticeDetailPageProps) {
   const { id } = await params;
-  const notice = getNoticeById(id);
+  const notice = await getPublicNoticeById(id);
 
   if (!notice) {
     notFound();
   }
 
-  const adjacent = getAdjacentNotices(notice.id);
+  const adjacent = await getAdjacentPublicNotices(notice.id);
 
   return (
     <section>
@@ -111,7 +113,7 @@ export default async function NoticeDetailPage({ params }: NoticeDetailPageProps
 
 type AdjacentLinkProps = {
   label: string;
-  notice: ReturnType<typeof getAdjacentNotices>["previous"];
+  notice: Awaited<ReturnType<typeof getAdjacentPublicNotices>>["previous"];
 };
 
 function AdjacentLink({ label, notice }: AdjacentLinkProps) {
