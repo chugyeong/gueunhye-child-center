@@ -15,7 +15,8 @@ const groupDescriptions: Record<string, string> = {
 export function TeachersList() {
   const teachers = useTeachersStore((state) => state.teachers);
   const isLoading = useTeachersStore((state) => state.isLoading);
-  const groups = groupTeachersByGroupName(teachers);
+  const visibleTeachers = teachers.filter((teacher) => teacher.is_visible);
+  const groups = groupTeachersByGroupName(visibleTeachers);
 
   return (
     <div className="mt-10 grid gap-5">

@@ -10,7 +10,12 @@ const ICON_STROKE = 1.8;
 export function TeacherPreview() {
   const teachers = useTeachersStore((state) => state.teachers);
   const isLoading = useTeachersStore((state) => state.isLoading);
-  const previewTeachers = teachers.slice(0, 8);
+  const visibleTeachers = teachers.filter((teacher) => teacher.is_visible);
+  const previewTeachers = visibleTeachers.slice(0, 8);
+
+  if (!isLoading && previewTeachers.length === 0) {
+    return null;
+  }
 
   return (
     <section className="bg-white">
