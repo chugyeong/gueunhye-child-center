@@ -1,4 +1,4 @@
-import { getAdminSupabaseClient } from "@/lib/admin-auth";
+import { getAdminMutationErrorMessage, getAdminMutationSupabaseClient } from "@/lib/admin-auth";
 import type { Teacher } from "@/types/teacher";
 
 type UpdateTeacherBody = Partial<Pick<Teacher, "name" | "position" | "group_name" | "is_visible">>;
@@ -9,7 +9,7 @@ type TeacherRouteContext = {
 
 export async function PATCH(request: Request, context: TeacherRouteContext) {
   try {
-    const adminSupabase = await getAdminSupabaseClient(request);
+    const adminSupabase = await getAdminMutationSupabaseClient(request);
 
     if (!adminSupabase) {
       return Response.json({ message: "로그인이 필요합니다." }, { status: 401 });
@@ -35,13 +35,16 @@ export async function PATCH(request: Request, context: TeacherRouteContext) {
 
     return Response.json(data as Teacher);
   } catch (error) {
-    return Response.json({ message: getErrorMessage(error) }, { status: 400 });
+    return Response.json(
+      { message: getAdminMutationErrorMessage(error, "선생님 정보를 수정하지 못했습니다.") },
+      { status: 400 },
+    );
   }
 }
 
 export async function DELETE(_request: Request, context: TeacherRouteContext) {
   try {
-    const adminSupabase = await getAdminSupabaseClient(_request);
+    const adminSupabase = await getAdminMutationSupabaseClient(_request);
 
     if (!adminSupabase) {
       return Response.json({ message: "로그인이 필요합니다." }, { status: 401 });
@@ -56,7 +59,10 @@ export async function DELETE(_request: Request, context: TeacherRouteContext) {
 
     return Response.json({ ok: true });
   } catch (error) {
-    return Response.json({ message: getErrorMessage(error) }, { status: 400 });
+    return Response.json(
+      { message: getAdminMutationErrorMessage(error, "선생님 정보를 삭제하지 못했습니다.") },
+      { status: 400 },
+    );
   }
 }
 
@@ -107,20 +113,4 @@ function parseRequiredString(value: unknown, message: string) {
   }
 
   return value.trim();
-}
-
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (error && typeof error === "object" && "message" in error) {
-    const message = (error as { message?: unknown }).message;
-
-    if (typeof message === "string") {
-      return message;
-    }
-  }
-
-  return "선생님 정보를 처리하지 못했습니다.";
 }

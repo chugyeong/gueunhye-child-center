@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { centerStaticInfo } from "@/data/center";
 import { signInAdmin } from "@/services/auth";
+import { ToastMessage } from "@/components/ui/toast-message";
 
 const ICON_STROKE = 1.8;
 
@@ -83,12 +84,6 @@ export default function AdminLoginPage() {
             />
           </label>
 
-          {error ? (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-              {error}
-            </p>
-          ) : null}
-
           <button
             type="submit"
             disabled={isSubmitting}
@@ -97,6 +92,7 @@ export default function AdminLoginPage() {
           </button>
         </form>
       </section>
+      <ToastMessage message={error} tone="error" onClose={() => setError(null)} />
     </main>
   );
 }

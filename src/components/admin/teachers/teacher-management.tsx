@@ -30,6 +30,7 @@ import {
 } from "@/services/teachers";
 import { useTeachersStore } from "@/stores/teachersStore";
 import type { Teacher } from "@/types/teacher";
+import { ToastMessage } from "@/components/ui/toast-message";
 
 const ICON_STROKE = 1.8;
 const teacherGroups = ["언어재활사", "작업치료사", "운영진"] as const;
@@ -310,8 +311,8 @@ export function TeacherManagement() {
         </div>
       </div>
 
-      {message ? <StatusPanel tone="success">{message}</StatusPanel> : null}
-      {submitError ? <StatusPanel tone="error">{submitError}</StatusPanel> : null}
+      <ToastMessage message={message} tone="success" onClose={() => setMessage(null)} />
+      <ToastMessage message={submitError} tone="error" onClose={() => setSubmitError(null)} />
 
       <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
         {isLoading && sortedTeachers.length === 0 ? <LoadingState /> : null}
@@ -836,7 +837,7 @@ function validateForm(formState: TeacherFormState): FormErrors {
 }
 
 function normalizeOrderItems(teachers: Teacher[]) {
-  return sortTeachers(teachers).map((teacher, index) => ({
+  return teachers.map((teacher, index) => ({
     id: teacher.id,
     display_order: index + 1,
   }));

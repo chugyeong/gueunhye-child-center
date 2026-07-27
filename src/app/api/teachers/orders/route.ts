@@ -1,4 +1,4 @@
-import { getAdminSupabaseClient } from "@/lib/admin-auth";
+import { getAdminMutationErrorMessage, getAdminMutationSupabaseClient } from "@/lib/admin-auth";
 import type { Teacher } from "@/types/teacher";
 
 type OrderItem = {
@@ -8,7 +8,7 @@ type OrderItem = {
 
 export async function PATCH(request: Request) {
   try {
-    const adminSupabase = await getAdminSupabaseClient(request);
+    const adminSupabase = await getAdminMutationSupabaseClient(request);
 
     if (!adminSupabase) {
       return Response.json({ message: "로그인이 필요합니다." }, { status: 401 });
@@ -38,7 +38,10 @@ export async function PATCH(request: Request) {
 
     return Response.json((data ?? []) as Teacher[]);
   } catch (error) {
-    return Response.json({ message: getErrorMessage(error) }, { status: 400 });
+    return Response.json(
+      { message: getAdminMutationErrorMessage(error, "선생님 순서를 저장하지 못했습니다.") },
+      { status: 400 },
+    );
   }
 }
 
@@ -71,20 +74,4 @@ function parseOrderItems(body: unknown) {
       display_order: displayOrder,
     } satisfies OrderItem;
   });
-}
-
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (error && typeof error === "object" && "message" in error) {
-    const message = (error as { message?: unknown }).message;
-
-    if (typeof message === "string") {
-      return message;
-    }
-  }
-
-  return "선생님 순서를 저장하지 못했습니다.";
 }

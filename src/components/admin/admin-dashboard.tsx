@@ -11,7 +11,6 @@ import { useCenterInfoStore } from "@/stores/centerInfoStore";
 import { useNoticesStore } from "@/stores/noticesStore";
 import { useTeachersStore } from "@/stores/teachersStore";
 import { formatOperatingHours, formatPhoneNumber, getFullAddress } from "@/utils/operatingHours";
-import { useEffect } from "react";
 
 export function AdminDashboard() {
   const centerInfo = useCenterInfoStore((state) => state.centerInfo);

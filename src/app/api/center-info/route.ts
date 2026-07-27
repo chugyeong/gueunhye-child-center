@@ -1,4 +1,4 @@
-import { getAdminSupabaseClient } from "@/lib/admin-auth";
+import { getAdminMutationErrorMessage, getAdminMutationSupabaseClient } from "@/lib/admin-auth";
 import { toApiErrorResponse } from "@/lib/api-error";
 import { supabase } from "@/lib/supabase/client";
 import type { CenterInfo, OperatingHours } from "@/types/centerInfo";
@@ -36,7 +36,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
-    const adminSupabase = await getAdminSupabaseClient(request);
+    const adminSupabase = await getAdminMutationSupabaseClient(request);
 
     if (!adminSupabase) {
       return Response.json({ message: "로그인이 필요합니다." }, { status: 401 });
@@ -74,7 +74,10 @@ export async function PATCH(request: Request) {
 
     return Response.json(data as CenterInfo);
   } catch (error) {
-    return Response.json({ message: getErrorMessage(error) }, { status: 400 });
+    return Response.json(
+      { message: getAdminMutationErrorMessage(error, "센터 정보를 저장하지 못했습니다.") },
+      { status: 400 },
+    );
   }
 }
 
@@ -133,20 +136,4 @@ function parseOperatingHours(value: unknown): OperatingHours {
   }
 
   return value as OperatingHours;
-}
-
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (error && typeof error === "object" && "message" in error) {
-    const message = (error as { message?: unknown }).message;
-
-    if (typeof message === "string") {
-      return message;
-    }
-  }
-
-  return "센터 정보를 저장하지 못했습니다.";
 }

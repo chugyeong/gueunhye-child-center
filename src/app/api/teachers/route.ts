@@ -1,4 +1,8 @@
-import { getAdminSupabaseClient } from "@/lib/admin-auth";
+import {
+  getAdminMutationErrorMessage,
+  getAdminMutationSupabaseClient,
+  getAdminSupabaseClient,
+} from "@/lib/admin-auth";
 import { toApiErrorResponse } from "@/lib/api-error";
 import { supabase } from "@/lib/supabase/client";
 import type { Teacher } from "@/types/teacher";
@@ -11,11 +15,23 @@ type CreateTeacherBody = Pick<
 export async function GET(request: Request) {
   try {
     const adminSupabase = await getAdminSupabaseClient(request);
-    const query = (adminSupabase ?? supabase)
+
+    if (adminSupabase) {
+      const { data, error } = await adminSupabase
+        .from("teachers")
+        .select("*")
+        .order("display_order", { ascending: true });
+
+      if (!error) {
+        return Response.json((data ?? []) as Teacher[]);
+      }
+    }
+
+    const { data, error } = await supabase
       .from("teachers")
       .select("*")
+      .eq("is_visible", true)
       .order("display_order", { ascending: true });
-    const { data, error } = adminSupabase ? await query : await query.eq("is_visible", true);
 
     if (error) {
       throw error;
@@ -29,7 +45,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const adminSupabase = await getAdminSupabaseClient(request);
+    const adminSupabase = await getAdminMutationSupabaseClient(request);
 
     if (!adminSupabase) {
       return Response.json({ message: "로그인이 필요합니다." }, { status: 401 });
@@ -44,7 +60,10 @@ export async function POST(request: Request) {
 
     return Response.json(data as Teacher);
   } catch (error) {
-    return Response.json({ message: getErrorMessage(error) }, { status: 400 });
+    return Response.json(
+      { message: getAdminMutationErrorMessage(error, "선생님 정보를 저장하지 못했습니다.") },
+      { status: 400 },
+    );
   }
 }
 
@@ -78,20 +97,4 @@ function parseDisplayOrder(value: unknown) {
   }
 
   return Math.floor(value);
-}
-
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (error && typeof error === "object" && "message" in error) {
-    const message = (error as { message?: unknown }).message;
-
-    if (typeof message === "string") {
-      return message;
-    }
-  }
-
-  return "선생님 정보를 저장하지 못했습니다.";
 }
