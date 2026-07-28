@@ -1,4 +1,5 @@
 import { getAdminMutationErrorMessage, getAdminMutationSupabaseClient } from "@/lib/admin-auth";
+import { parseBoolean, parseRequiredString } from "@/lib/api-validation";
 import type { Teacher } from "@/types/teacher";
 
 type UpdateTeacherBody = Partial<Pick<Teacher, "name" | "position" | "group_name" | "is_visible">>;
@@ -51,10 +52,19 @@ export async function DELETE(_request: Request, context: TeacherRouteContext) {
     }
 
     const { id } = await context.params;
-    const { error } = await adminSupabase.from("teachers").delete().eq("id", parseTeacherId(id));
+    const { data, error } = await adminSupabase
+      .from("teachers")
+      .delete()
+      .eq("id", parseTeacherId(id))
+      .select("id")
+      .maybeSingle();
 
     if (error) {
       throw error;
+    }
+
+    if (!data) {
+      return Response.json({ message: "삭제할 선생님 정보가 없습니다." }, { status: 404 });
     }
 
     return Response.json({ ok: true });
@@ -87,7 +97,7 @@ function parseUpdateTeacherBody(body: unknown): UpdateTeacherBody {
   }
 
   if ("is_visible" in value) {
-    input.is_visible = typeof value.is_visible === "boolean" ? value.is_visible : true;
+    input.is_visible = parseBoolean(value.is_visible, "노출 여부가 올바르지 않습니다.");
   }
 
   if (Object.keys(input).length === 0) {
@@ -105,12 +115,4 @@ function parseTeacherId(value: string) {
   }
 
   return id;
-}
-
-function parseRequiredString(value: unknown, message: string) {
-  if (typeof value !== "string" || !value.trim()) {
-    throw new Error(message);
-  }
-
-  return value.trim();
 }

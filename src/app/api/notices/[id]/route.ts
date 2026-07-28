@@ -1,4 +1,5 @@
 import { getAdminMutationErrorMessage, getAdminMutationSupabaseClient } from "@/lib/admin-auth";
+import { parseRequiredString } from "@/lib/api-validation";
 import { getNoticesFromSupabase } from "@/lib/notice-repository";
 import type { Notice } from "@/data/notices";
 
@@ -35,6 +36,10 @@ export async function PATCH(request: Request, context: NoticeRouteContext) {
 
     const notice = (await getNoticesFromSupabase(adminSupabase)).find((item) => item.id === id);
 
+    if (!notice) {
+      return Response.json({ message: "수정한 공지사항을 다시 불러오지 못했습니다." }, { status: 500 });
+    }
+
     return Response.json(notice);
   } catch (error) {
     return Response.json(
@@ -53,10 +58,19 @@ export async function DELETE(request: Request, context: NoticeRouteContext) {
     }
 
     const { id } = await context.params;
-    const { error } = await adminSupabase.from("notices").delete().eq("id", id);
+    const { data, error } = await adminSupabase
+      .from("notices")
+      .delete()
+      .eq("id", id)
+      .select("id")
+      .maybeSingle();
 
     if (error) {
       throw error;
+    }
+
+    if (!data) {
+      return Response.json({ message: "삭제할 공지사항이 없습니다." }, { status: 404 });
     }
 
     return Response.json({ ok: true });
@@ -89,12 +103,4 @@ function parseUpdateNoticeBody(body: unknown): UpdateNoticeBody {
   }
 
   return input;
-}
-
-function parseRequiredString(value: unknown, message: string) {
-  if (typeof value !== "string" || !value.trim()) {
-    throw new Error(message);
-  }
-
-  return value.trim();
 }

@@ -1,7 +1,13 @@
 "use client";
 
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import {
+  AdminFormField,
+  AdminModalShell,
+  AdminStatusPanel,
+  AdminTableLoadingState,
+} from "@/components/admin/admin-ui";
 import { ToastMessage } from "@/components/ui/toast-message";
 import type { Notice } from "@/data/notices";
 import {
@@ -196,11 +202,11 @@ export function NoticeManagement() {
       <ToastMessage message={submitError} tone="error" onClose={() => setSubmitError(null)} />
 
       <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        {isLoading && sortedNotices.length === 0 ? <LoadingState /> : null}
+        {isLoading && sortedNotices.length === 0 ? <AdminTableLoadingState /> : null}
 
         {!isLoading && error ? (
           <div className="grid gap-3 p-5">
-            <StatusPanel tone="error">{error}</StatusPanel>
+            <AdminStatusPanel tone="error">{error}</AdminStatusPanel>
             <button
               type="button"
               onClick={() => void refetch()}
@@ -322,9 +328,14 @@ function NoticeFormModal({
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <ModalShell title={mode === "create" ? "공지 등록" : "공지 수정"} onClose={onClose}>
+    <AdminModalShell
+      title={mode === "create" ? "공지 등록" : "공지 수정"}
+      titleId="admin-notice-modal-title"
+      maxWidth="max-w-2xl"
+      maxHeight="max-h-[min(760px,calc(100vh-48px))]"
+      onClose={onClose}>
       <form className="grid gap-4" onSubmit={onSubmit}>
-        <FormField label="제목" error={formErrors.title}>
+        <AdminFormField label="제목" error={formErrors.title}>
           <input
             type="text"
             value={formState.title}
@@ -332,8 +343,8 @@ function NoticeFormModal({
             disabled={isSubmitting}
             className="h-11 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-teal-700 focus:outline-none disabled:bg-slate-50"
           />
-        </FormField>
-        <FormField label="내용" error={formErrors.content}>
+        </AdminFormField>
+        <AdminFormField label="내용" error={formErrors.content}>
           <textarea
             value={formState.content}
             onChange={onChange("content")}
@@ -341,7 +352,7 @@ function NoticeFormModal({
             rows={12}
             className="min-h-72 resize-y rounded-md border border-slate-300 bg-white px-3 py-3 text-sm leading-6 text-slate-950 focus:border-teal-700 focus:outline-none disabled:bg-slate-50"
           />
-        </FormField>
+        </AdminFormField>
         <div className="mt-2 flex justify-end gap-2">
           <button
             type="button"
@@ -358,7 +369,7 @@ function NoticeFormModal({
           </button>
         </div>
       </form>
-    </ModalShell>
+    </AdminModalShell>
   );
 }
 
@@ -374,7 +385,7 @@ function DeleteNoticeModal({
   onConfirm: () => void;
 }) {
   return (
-    <ModalShell title="공지 삭제" onClose={onCancel}>
+    <AdminModalShell title="공지 삭제" titleId="admin-notice-delete-modal-title" onClose={onCancel}>
       <div className="grid gap-4">
         <div>
           <p className="text-sm font-bold text-slate-950">공지사항을 삭제하시겠습니까?</p>
@@ -399,87 +410,7 @@ function DeleteNoticeModal({
           </button>
         </div>
       </div>
-    </ModalShell>
-  );
-}
-
-function ModalShell({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: React.ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6">
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="admin-notice-modal-title"
-        className="max-h-[min(760px,calc(100vh-48px))] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-5 shadow-xl">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <h2 id="admin-notice-modal-title" className="text-xl font-bold text-slate-950">
-            {title}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="모달 닫기"
-            className="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:border-teal-300 hover:text-teal-700">
-            <X aria-hidden="true" size={18} strokeWidth={ICON_STROKE} />
-          </button>
-        </div>
-        {children}
-      </section>
-    </div>
-  );
-}
-
-function FormField({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="grid gap-2 text-sm font-bold text-slate-800">
-      {label}
-      {children}
-      {error ? <span className="text-xs font-semibold text-red-600">{error}</span> : null}
-    </label>
-  );
-}
-
-function StatusPanel({
-  tone,
-  children,
-}: {
-  tone: "error";
-  children: React.ReactNode;
-}) {
-  const classNameByTone = {
-    error: "border-red-100 bg-red-50 text-red-700",
-  };
-
-  return (
-    <p className={`rounded-md border px-4 py-3 text-sm font-semibold ${classNameByTone[tone]}`}>
-      {children}
-    </p>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="grid gap-3 p-5">
-      {Array.from({ length: 5 }, (_, index) => (
-        <div key={index} className="h-12 animate-pulse rounded-md bg-slate-100" />
-      ))}
-    </div>
+    </AdminModalShell>
   );
 }
 

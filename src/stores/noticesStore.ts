@@ -34,7 +34,7 @@ async function fetchNotices(set: (state: Partial<NoticesState>) => void) {
 
   try {
     const notices = await fetchNoticesWithRetry();
-    set({ notices, isInitialized: notices.length > 0, error: null });
+    set({ notices, isInitialized: true, error: null });
   } catch (error) {
     const message = error instanceof Error ? error.message : "공지사항을 불러오지 못했습니다.";
 
@@ -50,9 +50,9 @@ export const useNoticesStore = create<NoticesState>((set, get) => ({
   isInitialized: false,
   error: null,
   initialize: async () => {
-    const { notices, isLoading } = get();
+    const { isInitialized, isLoading } = get();
 
-    if (notices.length > 0 || isLoading) {
+    if (isInitialized || isLoading) {
       return;
     }
 

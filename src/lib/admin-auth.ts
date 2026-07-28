@@ -4,11 +4,8 @@ import { supabase } from "@/lib/supabase/client";
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL?.trim().toLowerCase();
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE;
-const SERVICE_ROLE_KEY_MESSAGE =
-  "관리자 저장 권한이 없습니다. SUPABASE_SERVICE_ROLE_KEY가 서버 런타임에 반영됐는지, Supabase secret/service_role 키인지 확인해 주세요.";
-const SERVICE_ROLE_GRANT_MESSAGE =
-  "Supabase service_role 키는 읽혔지만 테이블 권한이 부족합니다. SQL Editor에서 service_role에 필요한 테이블 권한을 GRANT해 주세요.";
+const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_ROLE;
 
 export function getBearerToken(request: Request) {
   const authorization = request.headers.get("authorization");
@@ -85,7 +82,9 @@ export async function getAdminMutationSupabaseClient(request: Request) {
   }
 
   if (!SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(SERVICE_ROLE_KEY_MESSAGE);
+    throw new Error(
+      "관리자 저장 권한이 없습니다. SUPABASE_SERVICE_ROLE_KEY가 서버 런타임에 반영됐는지, Supabase secret/service_role 키인지 확인해 주세요.",
+    );
   }
 
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -108,10 +107,10 @@ export function getAdminMutationErrorMessage(error: unknown, fallbackMessage: st
     message?.includes("row-level security") ||
     message?.includes("row level security")
   ) {
-    return SERVICE_ROLE_GRANT_MESSAGE;
+    return "Supabase service_role 키는 읽혔지만 테이블 권한이 부족합니다. SQL Editor에서 service_role에 필요한 테이블 권한을 GRANT해 주세요.";
   }
 
-  return message ?? fallbackMessage;
+  return message || fallbackMessage;
 }
 
 function logAdminMutationError(error: unknown) {
@@ -122,7 +121,6 @@ function logAdminMutationError(error: unknown) {
     message: details.message,
     hint: details.hint,
     hasServiceRoleKey: Boolean(SUPABASE_SERVICE_ROLE_KEY),
-    serviceRoleKeyPrefix: SUPABASE_SERVICE_ROLE_KEY?.slice(0, 10),
   });
 }
 

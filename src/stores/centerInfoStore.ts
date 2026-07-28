@@ -35,9 +35,9 @@ export const useCenterInfoStore = create<CenterInfoState>((set, get) => ({
   isInitialized: false,
   error: null,
   initialize: async () => {
-    const { centerInfo, isLoading } = get();
+    const { isInitialized, isLoading } = get();
 
-    if (centerInfo || isLoading) {
+    if (isInitialized || isLoading) {
       return;
     }
 
@@ -52,7 +52,7 @@ export const useCenterInfoStore = create<CenterInfoState>((set, get) => ({
         const nextCenterInfo = await fetchCenterInfoWithRetry();
         set({
           centerInfo: nextCenterInfo,
-          isInitialized: Boolean(nextCenterInfo),
+          isInitialized: true,
           error: null,
         });
       } catch (error) {
@@ -80,7 +80,7 @@ export const useCenterInfoStore = create<CenterInfoState>((set, get) => ({
         const nextCenterInfo = await getCenterInfo();
         set({
           centerInfo: nextCenterInfo,
-          isInitialized: Boolean(nextCenterInfo),
+          isInitialized: true,
           error: null,
         });
       } catch (error) {

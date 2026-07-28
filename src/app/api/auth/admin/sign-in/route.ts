@@ -2,22 +2,18 @@ import { toApiMessageResponse } from "@/lib/api-error";
 import { supabase } from "@/lib/supabase/client";
 
 const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL?.trim().toLowerCase();
-const ADMIN_EMAIL_NOT_CONFIGURED_MESSAGE = "관리자 이메일 환경변수가 설정되지 않았습니다.";
-const INVALID_PASSWORD_MESSAGE = "비밀번호를 입력해 주세요.";
-const NOT_ADMIN_MESSAGE = "관리자 계정이 아닙니다.";
-const SIGN_IN_FAILED_MESSAGE = "비밀번호를 확인해 주세요.";
 
 export async function POST(request: Request) {
   try {
     if (!ADMIN_EMAIL) {
-      return toApiMessageResponse(ADMIN_EMAIL_NOT_CONFIGURED_MESSAGE, 500);
+      return toApiMessageResponse("관리자 이메일 환경변수가 설정되지 않았습니다.", 500);
     }
 
     const body = (await request.json()) as { password?: unknown };
     const password = typeof body.password === "string" ? body.password : "";
 
     if (!password) {
-      return toApiMessageResponse(INVALID_PASSWORD_MESSAGE, 400);
+      return toApiMessageResponse("비밀번호를 입력해 주세요.", 400);
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -30,7 +26,7 @@ export async function POST(request: Request) {
     }
 
     if (!data.user || data.user.email?.trim().toLowerCase() !== ADMIN_EMAIL) {
-      return toApiMessageResponse(NOT_ADMIN_MESSAGE, 403);
+      return toApiMessageResponse("관리자 계정이 아닙니다.", 403);
     }
 
     return Response.json({
@@ -44,13 +40,13 @@ export async function POST(request: Request) {
 
 function getAdminSignInErrorMessage(error: unknown) {
   if (!(error instanceof Error)) {
-    return SIGN_IN_FAILED_MESSAGE;
+    return "비밀번호를 확인해 주세요.";
   }
 
   const normalizedMessage = error.message.toLowerCase();
 
   if (normalizedMessage.includes("invalid") || normalizedMessage.includes("credential")) {
-    return SIGN_IN_FAILED_MESSAGE;
+    return "비밀번호를 확인해 주세요.";
   }
 
   if (normalizedMessage.includes("email not confirmed")) {

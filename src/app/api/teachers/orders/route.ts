@@ -56,6 +56,9 @@ function parseOrderItems(body: unknown) {
     throw new Error("순서 정보가 없습니다.");
   }
 
+  const seenIds = new Set<number>();
+  const seenOrders = new Set<number>();
+
   return items.map((item) => {
     if (!item || typeof item !== "object") {
       throw new Error("순서 정보가 올바르지 않습니다.");
@@ -68,6 +71,13 @@ function parseOrderItems(body: unknown) {
     if (!Number.isInteger(id) || id < 1 || !Number.isInteger(displayOrder) || displayOrder < 1) {
       throw new Error("순서 정보가 올바르지 않습니다.");
     }
+
+    if (seenIds.has(id) || seenOrders.has(displayOrder)) {
+      throw new Error("순서 정보가 중복되었습니다.");
+    }
+
+    seenIds.add(id);
+    seenOrders.add(displayOrder);
 
     return {
       id,

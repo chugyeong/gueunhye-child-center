@@ -1,8 +1,10 @@
 import {
   getAdminMutationErrorMessage,
   getAdminMutationSupabaseClient,
+  getAdminSupabaseClient,
   getBearerToken,
 } from "@/lib/admin-auth";
+import { parseRequiredString } from "@/lib/api-validation";
 import { getNoticesFromSupabase, getPublicNotices, NOTICE_SELECT } from "@/lib/notice-repository";
 import type { Notice } from "@/data/notices";
 
@@ -13,7 +15,7 @@ export async function GET(request: Request) {
 
   if (token) {
     try {
-      const adminSupabase = await getAdminMutationSupabaseClient(request);
+      const adminSupabase = await getAdminSupabaseClient(request);
 
       if (!adminSupabase) {
         return Response.json({ message: "로그인이 필요합니다." }, { status: 401 });
@@ -58,6 +60,10 @@ export async function POST(request: Request) {
       items.filter((item) => item.id === String(data.id)),
     );
 
+    if (!notice) {
+      throw new Error("저장한 공지사항을 다시 불러오지 못했습니다.");
+    }
+
     return Response.json(notice);
   } catch (error) {
     return Response.json(
@@ -78,12 +84,4 @@ function parseNoticeBody(body: unknown): CreateNoticeBody {
     title: parseRequiredString(value.title, "제목을 입력해 주세요."),
     content: parseRequiredString(value.content, "내용을 입력해 주세요."),
   };
-}
-
-function parseRequiredString(value: unknown, message: string) {
-  if (typeof value !== "string" || !value.trim()) {
-    throw new Error(message);
-  }
-
-  return value.trim();
 }

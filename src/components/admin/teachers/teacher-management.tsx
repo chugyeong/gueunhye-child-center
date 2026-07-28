@@ -18,8 +18,15 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Info, Pencil, Plus, Trash2, X } from "lucide-react";
+import { GripVertical, Info, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import {
+  AdminFormField,
+  AdminModalShell,
+  AdminStatusPanel,
+  AdminTableLoadingState,
+} from "@/components/admin/admin-ui";
+import { ToastMessage } from "@/components/ui/toast-message";
 import {
   createTeacher,
   deleteTeacher,
@@ -30,7 +37,6 @@ import {
 } from "@/services/teachers";
 import { useTeachersStore } from "@/stores/teachersStore";
 import type { Teacher } from "@/types/teacher";
-import { ToastMessage } from "@/components/ui/toast-message";
 
 const ICON_STROKE = 1.8;
 const teacherGroups = ["언어재활사", "작업치료사", "운영진"] as const;
@@ -315,11 +321,11 @@ export function TeacherManagement() {
       <ToastMessage message={submitError} tone="error" onClose={() => setSubmitError(null)} />
 
       <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        {isLoading && sortedTeachers.length === 0 ? <LoadingState /> : null}
+        {isLoading && sortedTeachers.length === 0 ? <AdminTableLoadingState /> : null}
 
         {!isLoading && error ? (
           <div className="grid gap-3 p-5">
-            <StatusPanel tone="error">{error}</StatusPanel>
+            <AdminStatusPanel tone="error">{error}</AdminStatusPanel>
             <button
               type="button"
               onClick={() => void refetch()}
@@ -572,19 +578,22 @@ function TeacherFormModal({
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <ModalShell title={mode === "create" ? "선생님 등록" : "선생님 수정"} onClose={onClose}>
+    <AdminModalShell
+      title={mode === "create" ? "선생님 등록" : "선생님 수정"}
+      titleId="admin-teacher-modal-title"
+      onClose={onClose}>
       <form className="grid gap-4" onSubmit={onSubmit}>
-        <FormField label="이름" error={formErrors.name}>
+        <AdminFormField label="이름" error={formErrors.name}>
           <TextInput value={formState.name} onChange={onChange("name")} disabled={isSubmitting} />
-        </FormField>
-        <FormField label="직책" error={formErrors.position}>
+        </AdminFormField>
+        <AdminFormField label="직책" error={formErrors.position}>
           <TextInput
             value={formState.position}
             onChange={onChange("position")}
             disabled={isSubmitting}
           />
-        </FormField>
-        <FormField label="그룹" error={formErrors.group_name}>
+        </AdminFormField>
+        <AdminFormField label="그룹" error={formErrors.group_name}>
           <select
             value={formState.group_name}
             onChange={onChange("group_name")}
@@ -596,7 +605,7 @@ function TeacherFormModal({
               </option>
             ))}
           </select>
-        </FormField>
+        </AdminFormField>
         <label className="inline-flex items-center gap-2 text-sm font-bold text-slate-800">
           <input
             type="checkbox"
@@ -623,7 +632,7 @@ function TeacherFormModal({
           </button>
         </div>
       </form>
-    </ModalShell>
+    </AdminModalShell>
   );
 }
 
@@ -639,7 +648,7 @@ function DeleteTeacherModal({
   onConfirm: () => void;
 }) {
   return (
-    <ModalShell title="선생님 삭제" onClose={onCancel}>
+    <AdminModalShell title="선생님 삭제" titleId="admin-teacher-delete-modal-title" onClose={onCancel}>
       <div className="grid gap-4">
         <div>
           <p className="text-sm font-bold text-slate-950">선생님 정보를 삭제하시겠습니까?</p>
@@ -664,59 +673,7 @@ function DeleteTeacherModal({
           </button>
         </div>
       </div>
-    </ModalShell>
-  );
-}
-
-function ModalShell({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: React.ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-6">
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="admin-teacher-modal-title"
-        className="max-h-[min(720px,calc(100vh-48px))] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-5 shadow-xl">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <h2 id="admin-teacher-modal-title" className="text-xl font-bold text-slate-950">
-            {title}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="모달 닫기"
-            className="inline-flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:border-teal-300 hover:text-teal-700">
-            <X aria-hidden="true" size={18} strokeWidth={ICON_STROKE} />
-          </button>
-        </div>
-        {children}
-      </section>
-    </div>
-  );
-}
-
-function FormField({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="grid gap-2 text-sm font-bold text-slate-800">
-      {label}
-      {children}
-      {error ? <span className="text-xs font-semibold text-red-600">{error}</span> : null}
-    </label>
+    </AdminModalShell>
   );
 }
 
@@ -737,35 +694,6 @@ function TextInput({
       disabled={disabled}
       className="h-11 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 focus:border-teal-700 focus:outline-none disabled:bg-slate-50"
     />
-  );
-}
-
-function StatusPanel({
-  tone,
-  children,
-}: {
-  tone: "success" | "error";
-  children: React.ReactNode;
-}) {
-  const classNameByTone = {
-    success: "border-teal-100 bg-teal-50 text-teal-800",
-    error: "border-red-100 bg-red-50 text-red-700",
-  };
-
-  return (
-    <p className={`rounded-md border px-4 py-3 text-sm font-semibold ${classNameByTone[tone]}`}>
-      {children}
-    </p>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="grid gap-3 p-5">
-      {Array.from({ length: 5 }, (_, index) => (
-        <div key={index} className="h-12 animate-pulse rounded-md bg-slate-100" />
-      ))}
-    </div>
   );
 }
 

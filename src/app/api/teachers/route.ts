@@ -4,6 +4,7 @@ import {
   getAdminSupabaseClient,
 } from "@/lib/admin-auth";
 import { toApiErrorResponse } from "@/lib/api-error";
+import { parseBoolean, parseRequiredString } from "@/lib/api-validation";
 import { supabase } from "@/lib/supabase/client";
 import type { Teacher } from "@/types/teacher";
 
@@ -79,22 +80,17 @@ function parseCreateTeacherBody(body: unknown): CreateTeacherBody {
     position: parseRequiredString(value.position, "직책을 입력해 주세요."),
     group_name: parseRequiredString(value.group_name, "그룹을 선택해 주세요."),
     display_order: parseDisplayOrder(value.display_order),
-    is_visible: typeof value.is_visible === "boolean" ? value.is_visible : true,
+    is_visible:
+      value.is_visible === undefined
+        ? true
+        : parseBoolean(value.is_visible, "노출 여부가 올바르지 않습니다."),
   };
 }
 
-function parseRequiredString(value: unknown, message: string) {
-  if (typeof value !== "string" || !value.trim()) {
-    throw new Error(message);
-  }
-
-  return value.trim();
-}
-
 function parseDisplayOrder(value: unknown) {
-  if (typeof value !== "number" || !Number.isFinite(value) || value < 1) {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 1) {
     throw new Error("노출 순서가 올바르지 않습니다.");
   }
 
-  return Math.floor(value);
+  return value;
 }
